@@ -1,0 +1,25 @@
+{
+  "name": "fixedfloat-api",
+  "version": "1.0.0",
+  "description": "Advanced API wrapper for fixedfloat.com",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilddip/fixedfloat-api.git"
+  },
+  "keywords": [
+    "fixedfloat",
+    "crypto",
+    "exchange",
+    "api"
+  ],
+  "author": "wilddip (https://github.com/wilddip/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wilddip/fixedfloat-api/issues"
+  },
+  "homepage": "https://github.com/wilddip/fixedfloat-api#readme",
+  "dependencies": {
+    "axios": "^0.26.0"
+  }
+}
