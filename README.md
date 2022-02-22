@@ -16,5 +16,5 @@ const FixedFloat = require("fixedfloat-api");
 const fixed = new FixedFloat('API_KEY', 'API_SECRET');
 ```
 
-# Licsene
+# License
 fixedfloat-api is Licensed under the [MIT License](https://github.com/wilddip/fixedfloat-api/blob/main/LICENSE)
