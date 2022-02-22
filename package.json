@@ -1,7 +1,7 @@
 {
   "name": "fixedfloat-api",
   "version": "1.0.0",
-  "description": "Advanced API wrapper for fixedfloat.com",
+  "description": "Simple API wrapper for fixedfloat.com",
   "main": "index.js",
   "repository": {
     "type": "git",
