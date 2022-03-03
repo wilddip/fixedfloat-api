@@ -13,7 +13,12 @@ const STATES = [
     'A decision must be made to proceed with the order'
 ];
 
-const curr = (name, body, data) => {
+const resolveState = (data) => {
+    if (data.status) data.statusText = STATES[data.status];
+    return data;
+}
+
+const currencyAppend = (name, body, data) => {
     if (data.indexOf(' ') !== -1) {
         const arr = data.split(' ');
         body.append(`${name}Qty`, arr[0]);
@@ -29,13 +34,10 @@ class FixedFloat {
      * @description Get your pair of keys from https://fixedfloat.com/apikey
      */
     constructor(apiKey, secretKey) {
+        if (!apiKey || !secretKey) throw new Error('Please provide an API and secret keys');
         this.mainURL = 'https://fixedfloat.com/api/v1/';
         this.apiKey = apiKey;
         this.secretKey = secretKey;
-    }
-
-    _getHmac(query) {
-        return crypto.createHmac('sha256', Buffer.from(this.secretKey)).update(query).digest('hex')
     }
 
     /**
@@ -44,14 +46,14 @@ class FixedFloat {
      * @param {String} api_method API method
      * @param {String} body Body or query
      */
-    async _req(req_method, api_method, body = '') {
+    async _request(req_method, api_method, body = '') {
         if (!req_method || !api_method) throw new Error(`Required params: req_method & api_method`)
         const { data } = await axios({
             method: req_method,
             url: this.mainURL + api_method + (req_method === 'GET' ? `?${body}` : ''),
             headers: {
                 'X-API-KEY': this.apiKey,
-                'X-API-SIGN': this._getHmac(body)
+                'X-API-SIGN': crypto.createHmac('sha256', Buffer.from(this.secretKey)).update(body).digest('hex')
             },
             data: req_method === 'GET' ? '' : body
         });
@@ -63,7 +65,7 @@ class FixedFloat {
      * Getting a list of all currencies that are available on FixedFloat.com.
      */
     async getCurrencies() {
-        return await this._req('GET', 'getCurrencies')
+        return await this._request('GET', 'getCurrencies')
     }
 
     /**
@@ -75,9 +77,9 @@ class FixedFloat {
     async getPrice(from, to, type = 'float') {
         if (!from || !to || from.indexOf(' ') + to.indexOf(' ') === -2) throw new Error(`No required params. Example: {from: '0.1 ETH', to: 'BTC'}`);
         const body = new URLSearchParams({type});
-        curr('from', body, from);
-        curr('to', body, to);
-        return await this._req('POST', 'getPrice', body.toString())
+        currencyAppend('from', body, from);
+        currencyAppend('to', body, to);
+        return await this._request('POST', 'getPrice', body.toString())
     }
 
     /**
@@ -87,7 +89,7 @@ class FixedFloat {
      */
     async getOrder(id, token) {
         const body = new URLSearchParams({id, token});
-        return await this._req('GET', 'getOrder', body.toString())
+        return resolveState(await this._request('GET', 'getOrder', body.toString()));
     }
 
     /**
@@ -99,7 +101,7 @@ class FixedFloat {
      */
     async setEmergency(id, token, choice, address) {
         const body = new URLSearchParams({id, token, choice, address});
-        return await this._req('GET', 'setEmergency', body.toString())
+        return await this._request('GET', 'setEmergency', body.toString())
     }
 
     /**
@@ -113,10 +115,10 @@ class FixedFloat {
     async createOrder(from, to, toAddress, type = 'float', extra) {
         if (!from || !to || from.indexOf(' ') + to.indexOf(' ') === -2) throw new Error(`No required params. Example: {from: '0.1 ETH', to: 'BTC', ...}`);
         const body = new URLSearchParams({type, toAddress});
-        curr('from', body, from);
-        curr('to', body, to);
+        currencyAppend('from', body, from);
+        currencyAppend('to', body, to);
         if (extra) body.append('extra', extra);
-        return await this._req('POST', 'createOrder', body.toString());
+        return resolveState(await this._request('POST', 'createOrder', body.toString()));
     }
 }
 
